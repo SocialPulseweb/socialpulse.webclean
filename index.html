@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 FAMILIADA - Prosty pulpit</title>
+    <title>🏆 FAMILIADA - Z grupami i odpowiedziami</title>
     <style>
         * {
             margin: 0;
@@ -15,304 +15,496 @@
             font-family: 'Arial Black', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             color: white;
+            padding: 20px;
         }
 
-        .game-container {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 50px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        .header {
             text-align: center;
-            max-width: 800px;
-            width: 90%;
+            margin-bottom: 30px;
         }
 
         h1 {
             font-size: 3em;
-            margin-bottom: 20px;
             background: linear-gradient(45deg, #ff6b6b, #feca57);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
 
-        .round-info {
-            background: rgba(255,255,255,0.2);
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .team-panel h3, .controls-panel h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .team {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
             padding: 20px;
             border-radius: 20px;
-            margin-bottom: 30px;
+            margin: 15px 0;
+            text-align: center;
             font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .team.blue { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .team.active { 
+            transform: scale(1.05); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.05); }
+            50% { transform: scale(1.08); }
+        }
+
+        .answers-panel {
+            grid-column: 2;
         }
 
         .question {
             font-size: 2.5em;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             color: #333;
-            padding: 40px 20px;
-            border-radius: 25px;
-            margin: 30px 0;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
             min-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .input-area {
-            margin: 40px 0;
+        .answers-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
         }
 
-        #answerInput {
-            width: 70%;
-            padding: 25px;
-            font-size: 1.8em;
-            border: none;
-            border-radius: 20px;
-            text-align: center;
-            font-family: inherit;
-            background: rgba(255,255,255,0.9);
-            color: #333;
-            margin-right: 20px;
-        }
-
-        #answerInput:focus {
-            outline: none;
-            box-shadow: 0 0 20px rgba(255,255,255,0.5);
-            transform: scale(1.02);
-        }
-
-        .controls {
+        .answer-slot {
+            height: 100px;
+            border: 4px solid rgba(255,255,255,0.5);
+            border-radius: 15px;
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
 
-        .btn {
-            padding: 20px 40px;
-            font-size: 1.4em;
-            font-weight: bold;
+        .answer-slot:hover {
+            border-color: #fff;
+            transform: translateY(-5px);
+        }
+
+        .answer-slot.revealed {
+            background: linear-gradient(135deg, #26de81, #20bf6b);
+            border-color: #1dd1a1;
+            color: white;
+            animation: reveal 0.6s ease;
+        }
+
+        .answer-slot.strike {
+            background: linear-gradient(135deg, #ff6b6b, #ff5252);
+            border-color: #ff4757;
+            color: white;
+            animation: strike 0.6s ease;
+        }
+
+        @keyframes reveal {
+            0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes strike {
+            0% { transform: scale(1.1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        .buzzer-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5em;
             border: none;
             border-radius: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            min-width: 200px;
-        }
-
-        .btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-        }
-
-        .btn-primary { background: #4ecdc4; color: white; }
-        .btn-success { background: #26de81; color: white; }
-        .btn-danger { background: #ff6b6b; color: white; }
-        .btn-warning { background: #feca57; color: #333; }
-
-        .result {
-            min-height: 80px;
-            margin: 20px 0;
-            font-size: 2em;
+            margin: 10px 0;
             font-weight: bold;
-            padding: 20px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: all 0.3s ease;
         }
 
-        .result.success { background: rgba(38, 222, 129, 0.3); }
-        .result.error { background: rgba(255, 107, 107, 0.3); }
+        .buzzer-red { background: linear-gradient(135deg, #ff4757, #ff6b6b); color: white; }
+        .buzzer-blue { background: linear-gradient(135deg, #3742fa, #4ecdc4); color: white; }
 
-        .progress {
-            background: rgba(255,255,255,0.2);
-            height: 10px;
-            border-radius: 10px;
+        .buzzer-btn:active {
+            transform: scale(0.98);
+        }
+
+        .input-area {
             margin: 20px 0;
-            overflow: hidden;
         }
 
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #4ecdc4, #26de81);
-            width: 20%;
-            transition: width 0.5s ease;
-            border-radius: 10px;
+        #answerInput {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 15px;
         }
 
-        @media (max-width: 768px) {
-            .game-container { padding: 30px 20px; }
-            h1 { font-size: 2em; }
-            .question { font-size: 1.8em; padding: 30px 15px; }
-            #answerInput { width: 100%; margin-bottom: 20px; margin-right: 0; }
-            .controls { flex-direction: column; }
-            .btn { width: 100%; }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-success { background: linear-gradient(135deg, #00b894, #00cec9); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #ff6b6b, #ff5252); color: white; }
+
+        .round-info {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1000px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .answers-panel { grid-column: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
+    <div class="header">
         <h1>🏆 FAMILIADA</h1>
-        
         <div class="round-info">
-            Runda: <span id="currentRound">1</span> / 10
-            <div class="progress">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-        </div>
-
-        <div class="question" id="questionText">Naciśnij NOWA RUNDA aby rozpocząć!</div>
-
-        <div class="input-area">
-            <input type="text" id="answerInput" placeholder="Wpisz swoją odpowiedź..." autocomplete="off">
-            <button class="btn btn-success" onclick="checkAnswer()">✅ SPRAWDŹ</button>
-        </div>
-
-        <div id="resultArea" class="result" style="display: none;"></div>
-
-        <div class="controls">
-            <button class="btn btn-primary" onclick="newRound()">🎯 NOWA RUNDA</button>
-            <button class="btn btn-danger" onclick="skipAnswer()">⏭️ POMIŃ</button>
-            <button class="btn btn-warning" onclick="resetGame()">🔄 RESET</button>
-        </div>
-
-        <div style="margin-top: 30px; font-size: 1.2em;">
-            Punkty w rundzie: <span id="roundPoints">0</span> / 100
+            Runda: <span id="currentRound">1</span> | 
+            Zespół 1: <span id="team1Score">0</span> pkt | 
+            Zespół 2: <span id="team2Score">0</span> pkt
         </div>
     </div>
 
-    <script>
-        const pytania = [
-            // RUNDA 1
-            "Nazwij największe miasta w Polsce",
-            "Co Polacy jedzą najczęściej na śniadanie?",
-            "Nazwij dni tygodnia",
-            "Jakie owoce znasz?",
-            "Jakie warzywa jesz?",
+    <div class="game-container">
+        <!-- Panel zespołu 1 -->
+        <div class="panel team-panel">
+            <h3>🔴 Zespól 1</h3>
+            <div class="team red" id="team1Display">
+                <div style="font-size: 2em;">0 pkt</div>
+                <div id="team1Strikes">Strajki: 0/3</div>
+            </div>
+            <button class="buzzer-btn buzzer-red" onclick="buzzTeam('team1')">
+                🔔 BUZZER
+            </button>
+        </div>
 
-            // RUNDA 2
-            "Nazwij kolory tęczy",
-            "Co zabierasz na plażę?",
-            "Jak nazywają się twoi przyjaciele?",
-            "Nazwij zwierzęta domowe",
-            "Jakie zabawki lubisz?"
+        <!-- Panel pytań i odpowiedzi -->
+        <div class="panel answers-panel">
+            <div class="question" id="questionText">
+                Naciśnij 🎯 NOWA RUNDA
+            </div>
+            
+            <div class="answers-grid" id="answersGrid">
+                <!-- Odpowiedzi pojawią się tutaj -->
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                Punkty rundy: <span id="roundScore">0</span>/200
+            </div>
+        </div>
+
+        <!-- Panel zespołu 2 -->
+        <div class="panel team-panel">
+            <h3>🔵 Zespól 2</h3>
+            <div class="team blue" id="team2Display">
+                <div style="font-size: 2em;">0 pkt</div>
+                <div id="team2Strikes">Strajki: 0/3</div>
+            </div>
+            <button class="buzzer-btn buzzer-blue" onclick="buzzTeam('team2')">
+                🔔 BUZZER
+            </button>
+
+            <div class="input-area">
+                <input type="text" id="answerInput" placeholder="Wpisz odpowiedź..." autocomplete="off">
+                <button class="btn btn-success" onclick="checkAnswer()">✅ Sprawdź</button>
+                <button class="btn btn-danger" onclick="addStrike()">❌ Strajk</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button class="btn btn-primary" onclick="newRound()" style="display: inline-block; padding: 20px 40px; font-size: 1.5em;">
+            🎯 NOWA RUNDA
+        </button>
+        <button class="btn btn-danger" onclick="resetGame()" style="display: inline-block; padding: 20px 40px; font-size: 1.5em; margin-left: 20px;">
+            🔄 Reset
+        </button>
+    </div>
+
+    <script>
+        // BAZA PYTAŃ Z ODPOWIEDZIALMI
+        const pytania = [
+            {
+                pytanie: "Nazwij największe miasta w Polsce",
+                odpowiedzi: [
+                    { text: "Warszawa", punkty: 35 },
+                    { text: "Kraków", punkty: 22 },
+                    { text: "Wrocław", punkty: 12 },
+                    { text: "Poznań", punkty: 8 },
+                    { text: "Gdańsk", punkty: 6 },
+                    { text: "Katowice", punkty: 4 }
+                ]
+            },
+            {
+                pytanie: "Co Polacy jedzą na śniadanie?",
+                odpowiedzi: [
+                    { text: "Kanapki", punkty: 40 },
+                    { text: "Jajecznica", punkty: 18 },
+                    { text: "Płatki", punkty: 12 },
+                    { text: "Owsianka", punkty: 8 },
+                    { text: "Parówki", punkty: 6 },
+                    { text: "Omlet", punkty: 5 }
+                ]
+            },
+            {
+                pytanie: "Nazwij kolory tęczy",
+                odpowiedzi: [
+                    { text: "Czerwony", punkty: 28 },
+                    { text: "Pomarańczowy", punkty: 20 },
+                    { text: "Żółty", punkty: 18 },
+                    { text: "Zielony", punkty: 15 },
+                    { text: "Niebieski", punkty: 12 },
+                    { text: "Fioletowy", punkty: 7 }
+                ]
+            },
+            {
+                pytanie: "Co zabierasz na plażę?",
+                odpowiedzi: [
+                    { text: "Ręcznik", punkty: 35 },
+                    { text: "Krem z filtrem", punkty: 25 },
+                    { text: "Okulary", punkty: 15 },
+                    { text: "Parawan", punkty: 10 },
+                    { text: "Leżak", punkty: 8 },
+                    { text: "Picie", punkty: 5 }
+                ]
+            }
         ];
 
         let currentRound = 1;
-        let roundPoints = 0;
-        let currentQuestion = "";
-        let questionAnswered = false;
+        let currentQuestion = null;
+        let activeTeam = null;
+        let team1Score = 0;
+        let team2Score = 0;
+        let team1Strikes = 0;
+        let team2Strikes = 0;
+        let roundScore = 0;
+        let revealedAnswers = [];
 
         function newRound() {
-            if (currentRound > 10) {
-                alert("🎉 KONIEC GRY! Gratulacje za ukończenie wszystkich rund!");
-                resetGame();
-                return;
-            }
-
-            currentRound++;
-            questionAnswered = false;
-            roundPoints = 0;
+            currentQuestion = JSON.parse(JSON.stringify(pytania[(currentRound-1) % pytania.length]));
+            revealedAnswers = [];
+            roundScore = 0;
+            activeTeam = null;
             
-            // Losowe pytanie z puli
-            currentQuestion = pytania[Math.floor(Math.random() * pytania.length)];
-            
-            document.getElementById('questionText').textContent = currentQuestion;
-            document.getElementById('answerInput').value = '';
-            document.getElementById('answerInput').focus();
-            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('questionText').textContent = currentQuestion.pytanie;
             document.getElementById('currentRound').textContent = currentRound;
-            document.getElementById('roundPoints').textContent = roundPoints;
-            document.getElementById('progressBar').style.width = `${(currentRound-1) * 10}%`;
-            
-            // Automatyczne dopasowanie odpowiedzi (proste słowa kluczowe)
-            setupAnswerMatching();
+            renderAnswers();
+            updateScores();
+            clearActiveTeam();
         }
 
-        function setupAnswerMatching() {
-            // Proste dopasowanie na podstawie pytania
-            window.validAnswers = [];
+        function renderAnswers() {
+            const grid = document.getElementById('answersGrid');
+            grid.innerHTML = '';
             
-            if (currentQuestion.includes("miasta")) {
-                validAnswers = ["warszawa", "kraków", "wrocław", "poznań", "gdańsk", "łódź", "katowice"];
-            } else if (currentQuestion.includes("śniadanie")) {
-                validAnswers = ["kanapka", "chleb", "jajecznica", "ser", "wędlina", "masło", "płatki"];
-            } else if (currentQuestion.includes("tęcz")) {
-                validAnswers = ["czerwony", "pomarańczowy", "żółty", "zielony", "niebieski", "indygo", "fioletowy"];
-            } else if (currentQuestion.includes("plażę")) {
-                validAnswers = ["ręcznik", "krem", "okulary", "kapelusz", "parawan", "leżak"];
-            } else if (currentQuestion.includes("kolory")) {
-                validAnswers = ["czerwony", "niebieski", "zielony", "żółty", "biały", "czarny"];
-            } else {
-                // Domyślne uniwersalne odpowiedzi
-                validAnswers = ["dom", "auto", "telefon", "komputer", "szkoła", "praca"];
+            currentQuestion.odpowiedzi.slice(0, 6).forEach((odp, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'answer-slot';
+                slot.innerHTML = `
+                    <div style="font-size: 2em;">${String(index + 1).padStart(2, '0')}</div>
+                    <div style="font-size: 0.9em; opacity: 0.7;">${odp.punkty} pkt</div>
+                `;
+                slot.onclick = () => revealAnswer(index);
+                grid.appendChild(slot);
+            });
+        }
+
+        function revealAnswer(index) {
+            if (revealedAnswers.includes(index) || !activeTeam) return;
+            
+            const answer = currentQuestion.odpowiedzi[index];
+            revealedAnswers.push(index);
+            roundScore += answer.punkty;
+            
+            // Podświetlenie odpowiedzi
+            const slots = document.querySelectorAll('.answer-slot');
+            slots[index].classList.add('revealed');
+            slots[index].innerHTML = `
+                <div style="font-size: 1.2em;">${answer.text}</div>
+                <div style="font-size: 1.5em;">${answer.punkty} pkt</div>
+            `;
+            
+            // Dodaj punkty aktywnemu zespołowi
+            if (activeTeam === 'team1') {
+                team1Score += answer.punkty;
+            } else if (activeTeam === 'team2') {
+                team2Score += answer.punkty;
             }
+            
+            updateScores();
+            
+            // Sprawdź czy zdobyte pytanie (100 pkt)
+            if (roundScore >= 100) {
+                setTimeout(() => {
+                    alert(`🎉 ZDOBYTE PYTANIE! ${activeTeam === 'team1' ? 'Zespół 1' : 'Zespół 2'} zdobywa rundę!`);
+                    currentRound++;
+                    newRound();
+                }, 1000);
+            }
+        }
+
+        function buzzTeam(team) {
+            if (activeTeam) return; // Buzzer zablokowany
+            
+            activeTeam = team;
+            const teamName = team === 'team1' ? 'Zespół 1' : 'Zespół 2';
+            
+            // Aktywuj zespół
+            document.getElementById('team1Display').classList.toggle('active', team === 'team1');
+            document.getElementById('team2Display').classList.toggle('active', team === 'team2');
+            
+            // Efekt buzzera
+            setTimeout(() => {
+                alert(`${teamName} BUZZER! 🔔`);
+                document.getElementById('answerInput').focus();
+            }, 100);
         }
 
         function checkAnswer() {
-            const answer = document.getElementById('answerInput').value.trim().toLowerCase();
+            if (!activeTeam) {
+                alert('Najpierw buzzer!');
+                return;
+            }
             
-            if (!answer) {
-                alert("Wpisz odpowiedź!");
-                return;
-            }
-
-            if (questionAnswered) {
-                alert("Już odpowiedziano na to pytanie! Naciśnij NOWA RUNDA.");
-                return;
-            }
-
-            // Sprawdzanie czy odpowiedź pasuje
-            const isCorrect = validAnswers.some(valid => 
-                answer.includes(valid) || valid.includes(answer)
+            const answer = document.getElementById('answerInput').value.trim().toLowerCase();
+            document.getElementById('answerInput').value = '';
+            
+            if (!answer) return;
+            
+            // Szukaj pasującej odpowiedzi
+            const found = currentQuestion.odpowiedzi.find((odp, index) => 
+                !revealedAnswers.includes(index) &&
+                (odp.text.toLowerCase().includes(answer) || 
+                 answer.includes(odp.text.toLowerCase().split(' ')[0]))
             );
-
-            if (isCorrect) {
-                roundPoints += 20;
-                showResult("✅ POPRAWNA ODPOWIEDŹ! +20 pkt", "success");
+            
+            if (found) {
+                revealAnswer(currentQuestion.odpowiedzi.indexOf(found));
             } else {
-                showResult("❌ Brak takiej odpowiedzi na tablicy", "error");
+                addStrike();
             }
-
-            document.getElementById('roundPoints').textContent = roundPoints;
-            questionAnswered = true;
         }
 
-        function showResult(message, type) {
-            const resultArea = document.getElementById('resultArea');
-            resultArea.textContent = message;
-            resultArea.className = `result ${type}`;
-            resultArea.style.display = 'flex';
+        function addStrike() {
+            if (!activeTeam) return;
+            
+            if (activeTeam === 'team1') {
+                team1Strikes++;
+                document.getElementById('team1Strikes').textContent = `Strajki: ${team1Strikes}/3`;
+                if (team1Strikes >= 3) {
+                    alert('💥 3 STRAJKI! ZMIANA ZESPOŁU!');
+                    switchTeam();
+                }
+            } else {
+                team2Strikes++;
+                document.getElementById('team2Strikes').textContent = `Strajki: ${team2Strikes}/3`;
+                if (team2Strikes >= 3) {
+                    alert('💥 3 STRAJKI! ZMIANA ZESPOŁU!');
+                    switchTeam();
+                }
+            }
         }
 
-        function skipAnswer() {
-            showResult("⏭️ POMINIĘTO", "error");
-            questionAnswered = true;
+        function switchTeam() {
+            activeTeam = activeTeam === 'team1' ? 'team2' : 'team1';
+            clearActiveTeam();
+            document.getElementById('team1Display').classList.toggle('active', activeTeam === 'team1');
+            document.getElementById('team2Display').classList.toggle('active', activeTeam === 'team2');
+        }
+
+        function clearActiveTeam() {
+            document.getElementById('team1Display').classList.remove('active');
+            document.getElementById('team2Display').classList.remove('active');
+        }
+
+        function updateScores() {
+            document.getElementById('team1Score').textContent = team1Score;
+            document.getElementById('team2Score').textContent = team2Score;
+            document.getElementById('roundScore').textContent = roundScore;
+            
+            document.getElementById('team1Display').innerHTML = `
+                <div style="font-size: 2em;">${team1Score} pkt</div>
+                <div id="team1Strikes">Strajki: ${team1Strikes}/3</div>
+            `;
+            document.getElementById('team2Display').innerHTML = `
+                <div style="font-size: 2em;">${team2Score} pkt</div>
+                <div id="team2Strikes">Strajki: ${team2Strikes}/3</div>
+            `;
         }
 
         function resetGame() {
-            currentRound = 0;
-            roundPoints = 0;
+            currentRound = 1;
+            team1Score = 0;
+            team2Score = 0;
+            team1Strikes = 0;
+            team2Strikes = 0;
             newRound();
         }
 
-        // Enter do sprawdzania odpowiedzi
-        document.getElementById('answerInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkAnswer();
-            }
+        // Event listeners
+        document.getElementById('answerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnswer();
         });
 
-        // Automatyczne rozpoczęcie pierwszej rundy
-        setTimeout(() => {
-            newRound();
-        }, 500);
+        // Start gry
+        newRound();
     </script>
 </body>
 </html>
