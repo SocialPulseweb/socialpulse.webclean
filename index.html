@@ -1,181 +1,318 @@
-import random
-import time
-from collections import defaultdict
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 FAMILIADA - Prosty pulpit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-class Familiada:
-    def __init__(self):
-        self.pytania = [
-            {
-                "pytanie": "Nazwij największe miasta w Polsce",
-                "odpowiedzi": [
-                    ("Warszawa", 35),
-                    ("Kraków", 22),
-                    ("Wrocław", 12),
-                    ("Poznań", 8),
-                    ("Gdańsk", 6),
-                    ("Katowice", 4),
-                    ("Łódź", 3),
-                    ("Szczecin", 2)
-                ]
-            },
-            {
-                "pytanie": "Co Polacy jedzą na śniadanie?",
-                "odpowiedzi": [
-                    ("Kanapki", 40),
-                    ("Jajecznica", 18),
-                    ("Płatki", 12),
-                    ("Owsianka", 8),
-                    ("Parówki", 6),
-                    ("Omlet", 5),
-                    ("Twaróg", 4),
-                    ("Ser biały", 3)
-                ]
-            },
-            {
-                "pytanie": "Nazwij kolory tęczy",
-                "odpowiedzi": [
-                    ("Czerwony", 28),
-                    ("Pomarańczowy", 20),
-                    ("Żółty", 18),
-                    ("Zielony", 15),
-                    ("Niebieski", 12),
-                    ("Granatowy", 6),
-                    ("Fioletowy", 4)
-                ]
-            },
-            {
-                "pytanie": "Co zabieramy na plażę?",
-                "odpowiedzi": [
-                    ("Ręcznik", 35),
-                    ("Krem z filtrem", 20),
-                    ("Leżak", 15),
-                    ("Parawan", 12),
-                    ("Zabawki", 8),
-                    ("Picie", 5),
-                    ("Książka", 3)
-                ]
-            },
-            {
-                "pytanie": "Nazwij najpopularniejsze dyscypliny sportowe",
-                "odpowiedzi": [
-                    ("Piłka nożna", 45),
-                    ("Siatkówka", 18),
-                    ("Koszykówka", 12),
-                    ("Tenis", 8),
-                    ("Bieganie", 6),
-                    ("Pływanie", 5),
-                    ("Rower", 3)
-                ]
+        body {
+            font-family: 'Arial Black', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .game-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .round-info {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            font-size: 1.5em;
+        }
+
+        .question {
+            font-size: 2.5em;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 40px 20px;
+            border-radius: 25px;
+            margin: 30px 0;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .input-area {
+            margin: 40px 0;
+        }
+
+        #answerInput {
+            width: 70%;
+            padding: 25px;
+            font-size: 1.8em;
+            border: none;
+            border-radius: 20px;
+            text-align: center;
+            font-family: inherit;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            margin-right: 20px;
+        }
+
+        #answerInput:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+            transform: scale(1.02);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 20px 40px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            min-width: 200px;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary { background: #4ecdc4; color: white; }
+        .btn-success { background: #26de81; color: white; }
+        .btn-danger { background: #ff6b6b; color: white; }
+        .btn-warning { background: #feca57; color: #333; }
+
+        .result {
+            min-height: 80px;
+            margin: 20px 0;
+            font-size: 2em;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result.success { background: rgba(38, 222, 129, 0.3); }
+        .result.error { background: rgba(255, 107, 107, 0.3); }
+
+        .progress {
+            background: rgba(255,255,255,0.2);
+            height: 10px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #26de81);
+            width: 20%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .game-container { padding: 30px 20px; }
+            h1 { font-size: 2em; }
+            .question { font-size: 1.8em; padding: 30px 15px; }
+            #answerInput { width: 100%; margin-bottom: 20px; margin-right: 0; }
+            .controls { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🏆 FAMILIADA</h1>
+        
+        <div class="round-info">
+            Runda: <span id="currentRound">1</span> / 10
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="question" id="questionText">Naciśnij NOWA RUNDA aby rozpocząć!</div>
+
+        <div class="input-area">
+            <input type="text" id="answerInput" placeholder="Wpisz swoją odpowiedź..." autocomplete="off">
+            <button class="btn btn-success" onclick="checkAnswer()">✅ SPRAWDŹ</button>
+        </div>
+
+        <div id="resultArea" class="result" style="display: none;"></div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="newRound()">🎯 NOWA RUNDA</button>
+            <button class="btn btn-danger" onclick="skipAnswer()">⏭️ POMIŃ</button>
+            <button class="btn btn-warning" onclick="resetGame()">🔄 RESET</button>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 1.2em;">
+            Punkty w rundzie: <span id="roundPoints">0</span> / 100
+        </div>
+    </div>
+
+    <script>
+        const pytania = [
+            // RUNDA 1
+            "Nazwij największe miasta w Polsce",
+            "Co Polacy jedzą najczęściej na śniadanie?",
+            "Nazwij dni tygodnia",
+            "Jakie owoce znasz?",
+            "Jakie warzywa jesz?",
+
+            // RUNDA 2
+            "Nazwij kolory tęczy",
+            "Co zabierasz na plażę?",
+            "Jak nazywają się twoi przyjaciele?",
+            "Nazwij zwierzęta domowe",
+            "Jakie zabawki lubisz?"
+        ];
+
+        let currentRound = 1;
+        let roundPoints = 0;
+        let currentQuestion = "";
+        let questionAnswered = false;
+
+        function newRound() {
+            if (currentRound > 10) {
+                alert("🎉 KONIEC GRY! Gratulacje za ukończenie wszystkich rund!");
+                resetGame();
+                return;
             }
-        ]
-        self.gracze = {}
-        self.punkty_zespolu1 = 0
-        self.punkty_zespolu2 = 0
-        self.aktywna_runda = None
-        self.wybrane_odpowiedzi = []
-        
-    def dodaj_gracza(self, imie):
-        if imie not in self.gracze:
-            self.gracze[imie] = 0
-        print(f"Gracz {imie} dodany!")
-    
-    def buzzer(self, gracz):
-        if gracz not in self.gracze:
-            print("Nieznany gracz!")
-            return False
-        
-        print(f"\n🔔 BUZZER! {gracz} nacisnął buzzer!")
-        time.sleep(1)
-        return True
-    
-    def wyswietl_pytanie(self):
-        pytanie = self.aktywna_runda
-        print(f"\n🏆 PYTANIE: {pytanie['pytanie']}")
-        print("Odpowiedzi (punkty):")
-        for i, (odp, pkt) in enumerate(pytanie['odpowiedzi'][:3], 1):
-            print(f"  {i}. {odp} ({pkt} pkt)")
-        print("...")
-    
-    def rozpocznij_runde(self):
-        self.aktywna_runda = random.choice(self.pytania)
-        self.wybrane_odpowiedzi = []
-        print("\n🔥 NOWA RUNDA!")
-        self.wyswietl_pytanie()
-    
-    def zgadnij_odpowiedz(self, odpowiedz, gracz):
-        pytanie = self.aktywna_runda
-        for odp, punkty in pytanie['odpowiedzi']:
-            if odpowiedz.lower() in odp.lower() or odp.lower() in odpowiedz.lower():
-                if odp not in [o[0] for o in self.wybrane_odpowiedzi]:
-                    self.wybrane_odpowiedzi.append((odp, punkty))
-                    self.gracze[gracz] += punkty
-                    print(f"✅ POPRAWNA! '{odp}' = {punkty} pkt")
-                    print(f"Gracz {gracz}: {self.gracze[gracz]} pkt")
-                    
-                    if sum(pkt for _, pkt in self.wybrane_odpowiedzi) >= 50:
-                        print("🎉 ZDOBYTE PYTANIE!")
-                        return True
-                    return True
-        print("❌ Źle! Brak takiej odpowiedzi.")
-        return False
-    
-    def wyswietl_stan_rundy(self):
-        print("\n📊 STAN RUNDY:")
-        for odp, pkt in self.wybrane_odpowiedzi:
-            print(f"  • {odp}: {pkt} pkt")
-        print(f"  RAZEM: {sum(pkt for _, pkt in self.wybrane_odpowiedzi)} pkt")
-    
-    def wyswietl_ranking(self):
-        print("\n🏅 RANKING GRACZY:")
-        sorted_gracze = sorted(self.gracze.items(), key=lambda x: x[1], reverse=True)
-        for i, (imie, pkt) in enumerate(sorted_gracze, 1):
-            print(f"{i}. {imie}: {pkt} pkt")
-    
-    def graj(self):
-        print("🎮 Witaj w FAMILIADZIE! 🎮")
-        print("Polecenia: 'dodaj [imię]', 'runda', 'buzzer [imię]', 'odp [odpowiedź]', 'ranking'")
-        
-        while True:
-            try:
-                wejscie = input("\n➤ ").strip().lower()
-                
-                if wejscie.startswith("dodaj "):
-                    imie = wejscie[6:].strip().title()
-                    self.dodaj_gracza(imie)
-                
-                elif wejscie == "runda":
-                    self.rozpocznij_runde()
-                
-                elif wejscie.startswith("buzzer "):
-                    gracz = wejscie[7:].strip().title()
-                    self.buzzer(gracz)
-                
-                elif wejscie.startswith("odp "):
-                    if not self.aktywna_runda:
-                        print("Najpierw rozpocznij rundę!")
-                        continue
-                    odpowiedz = wejscie[4:].strip().title()
-                    gracz = input("Kto zgaduje? ").strip().title()
-                    self.zgadnij_odpowiedz(odpowiedz, gracz)
-                    self.wyswietl_stan_rundy()
-                
-                elif wejscie == "ranking":
-                    self.wyswietl_ranking()
-                
-                elif wejscie in ["koniec", "quit", "exit"]:
-                    print("Dziękujemy za grę! 🏆")
-                    self.wyswietl_ranking()
-                    break
-                
-                else:
-                    print("Nieznane polecenie! Użyj: dodaj, runda, buzzer, odp, ranking")
-                    
-            except KeyboardInterrupt:
-                print("\n\nDo widzenia! 🏆")
-                self.wyswietl_ranking()
-                break
 
-# Uruchom grę
-if __name__ == "__main__":
-    gra = Familiada()
-    gra.graj()
+            currentRound++;
+            questionAnswered = false;
+            roundPoints = 0;
+            
+            // Losowe pytanie z puli
+            currentQuestion = pytania[Math.floor(Math.random() * pytania.length)];
+            
+            document.getElementById('questionText').textContent = currentQuestion;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('answerInput').focus();
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('currentRound').textContent = currentRound;
+            document.getElementById('roundPoints').textContent = roundPoints;
+            document.getElementById('progressBar').style.width = `${(currentRound-1) * 10}%`;
+            
+            // Automatyczne dopasowanie odpowiedzi (proste słowa kluczowe)
+            setupAnswerMatching();
+        }
+
+        function setupAnswerMatching() {
+            // Proste dopasowanie na podstawie pytania
+            window.validAnswers = [];
+            
+            if (currentQuestion.includes("miasta")) {
+                validAnswers = ["warszawa", "kraków", "wrocław", "poznań", "gdańsk", "łódź", "katowice"];
+            } else if (currentQuestion.includes("śniadanie")) {
+                validAnswers = ["kanapka", "chleb", "jajecznica", "ser", "wędlina", "masło", "płatki"];
+            } else if (currentQuestion.includes("tęcz")) {
+                validAnswers = ["czerwony", "pomarańczowy", "żółty", "zielony", "niebieski", "indygo", "fioletowy"];
+            } else if (currentQuestion.includes("plażę")) {
+                validAnswers = ["ręcznik", "krem", "okulary", "kapelusz", "parawan", "leżak"];
+            } else if (currentQuestion.includes("kolory")) {
+                validAnswers = ["czerwony", "niebieski", "zielony", "żółty", "biały", "czarny"];
+            } else {
+                // Domyślne uniwersalne odpowiedzi
+                validAnswers = ["dom", "auto", "telefon", "komputer", "szkoła", "praca"];
+            }
+        }
+
+        function checkAnswer() {
+            const answer = document.getElementById('answerInput').value.trim().toLowerCase();
+            
+            if (!answer) {
+                alert("Wpisz odpowiedź!");
+                return;
+            }
+
+            if (questionAnswered) {
+                alert("Już odpowiedziano na to pytanie! Naciśnij NOWA RUNDA.");
+                return;
+            }
+
+            // Sprawdzanie czy odpowiedź pasuje
+            const isCorrect = validAnswers.some(valid => 
+                answer.includes(valid) || valid.includes(answer)
+            );
+
+            if (isCorrect) {
+                roundPoints += 20;
+                showResult("✅ POPRAWNA ODPOWIEDŹ! +20 pkt", "success");
+            } else {
+                showResult("❌ Brak takiej odpowiedzi na tablicy", "error");
+            }
+
+            document.getElementById('roundPoints').textContent = roundPoints;
+            questionAnswered = true;
+        }
+
+        function showResult(message, type) {
+            const resultArea = document.getElementById('resultArea');
+            resultArea.textContent = message;
+            resultArea.className = `result ${type}`;
+            resultArea.style.display = 'flex';
+        }
+
+        function skipAnswer() {
+            showResult("⏭️ POMINIĘTO", "error");
+            questionAnswered = true;
+        }
+
+        function resetGame() {
+            currentRound = 0;
+            roundPoints = 0;
+            newRound();
+        }
+
+        // Enter do sprawdzania odpowiedzi
+        document.getElementById('answerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Automatyczne rozpoczęcie pierwszej rundy
+        setTimeout(() => {
+            newRound();
+        }, 500);
+    </script>
+</body>
+</html>
