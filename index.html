@@ -1,467 +1,181 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 FAMILIADA - Gra Online</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import random
+import time
+from collections import defaultdict
 
-        body {
-            font-family: 'Arial Black', Arial, sans-serif;
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            background: rgba(255,255,255,0.95);
-            padding: 30px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        h1 {
-            font-size: 3.5em;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .game-area {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .panel {
-            background: rgba(255,255,255,0.95);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-            backdrop-filter: blur(10px);
-            height: fit-content;
-        }
-
-        .players-panel h3, .controls-panel h3 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .player {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            margin: 10px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-
-        .player:hover {
-            transform: scale(1.05);
-        }
-
-        .buzzer-btn {
-            width: 100%;
-            padding: 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            margin: 10px 0;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .buzzer-red { background: #ff4757; color: white; }
-        .buzzer-blue { background: #3742fa; color: white; }
-        .buzzer-red:active, .buzzer-blue:active {
-            transform: scale(0.95);
-        }
-
-        .question-panel {
-            grid-column: 1 / -1;
-            text-align: center;
-        }
-
-        .question {
-            font-size: 2.5em;
-            background: linear-gradient(45deg, #ff9ff3, #f368e0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
-
-        .answers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .answer {
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 1.3em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-        }
-
-        .answer.available {
-            background: linear-gradient(135deg, #a8e6cf, #88d8a3);
-            color: #2d5016;
-        }
-
-        .answer.revealed {
-            background: linear-gradient(135deg, #ffd93d, #ffec59);
-            color: #b8860b;
-            animation: reveal 0.6s ease;
-        }
-
-        .answer.strike {
-            background: linear-gradient(135deg, #ff6b6b, #ff5252);
-            color: white;
-            animation: strike 0.6s ease;
-        }
-
-        @keyframes reveal {
-            0% { transform: scale(0.8) rotate(-10deg); opacity: 0; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        @keyframes strike {
-            0% { transform: scale(1.1); }
-            50% { transform: scale(0.9); }
-            100% { transform: scale(1); }
-        }
-
-        .score-display {
-            font-size: 4em;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-            color: #333;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            border-radius: 10px;
-            cursor: pointer;
-            margin: 10px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-        }
-
-        .buzz-effect {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 5em;
-            z-index: 1000;
-            pointer-events: none;
-            animation: buzzAnim 1s ease-out forwards;
-        }
-
-        @keyframes buzzAnim {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1.5) rotate(180deg); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2) rotate(360deg); opacity: 0; }
-        }
-
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🏆 FAMILIADA 🏆</h1>
-            <div class="score-display" id="roundScore">0 pkt</div>
-        </div>
-
-        <div class="game-area">
-            <div class="panel players-panel">
-                <h3>👥 GRACZE</h3>
-                <div id="playersList"></div>
-                <input type="text" id="playerName" placeholder="Imię gracza" style="width:100%; padding:10px; margin:10px 0; border-radius:10px; border:2px solid #ddd;">
-                <button class="btn" onclick="addPlayer()">➕ Dodaj gracza</button>
-            </div>
-
-            <div class="panel question-panel">
-                <div id="questionArea">
-                    <button class="btn" onclick="newRound()" style="font-size:1.5em; padding:20px 40px;">🎯 NOWA RUNDA</button>
-                </div>
-                <div id="answersContainer" class="answers-grid"></div>
-            </div>
-
-            <div class="panel controls-panel">
-                <h3>🔔 BUZZERY</h3>
-                <button class="buzzer-btn buzzer-red" onclick="buzzPlayer('Zespół 1')">🔴 Zespól 1</button>
-                <button class="buzzer-btn buzzer-blue" onclick="buzzPlayer('Zespół 2')">🔵 Zespól 2</button>
-                <div style="margin-top:20px;">
-                    <input type="text" id="guessInput" placeholder="Twoja odpowiedź..." style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; font-size:1.1em; border:2px solid #ddd;">
-                    <button class="btn" onclick="submitGuess()" style="width:100%;">✅ Zgadywanie</button>
-                </div>
-                <button class="btn" onclick="strike()" style="background:#ff6b6b;">❌ Strajk</button>
-            </div>
-        </div>
-
-        <div class="panel" style="text-align:center;">
-            <h3>🏅 RANKING</h3>
-            <div id="ranking"></div>
-            <button class="btn" onclick="resetGame()" style="background:#ff4757; margin-top:20px;">🔄 Reset gry</button>
-        </div>
-    </div>
-
-    <script>
-        const pytania = [
+class Familiada:
+    def __init__(self):
+        self.pytania = [
             {
-                pytanie: "Nazwij największe miasta w Polsce",
-                odpowiedzi: [
-                    { text: "Warszawa", punkty: 35, revealed: false },
-                    { text: "Kraków", punkty: 22, revealed: false },
-                    { text: "Wrocław", punkty: 12, revealed: false },
-                    { text: "Poznań", punkty: 8, revealed: false },
-                    { text: "Gdańsk", punkty: 6, revealed: false },
-                    { text: "Katowice", punkty: 4, revealed: false },
-                    { text: "Łódź", punkty: 3, revealed: false }
+                "pytanie": "Nazwij największe miasta w Polsce",
+                "odpowiedzi": [
+                    ("Warszawa", 35),
+                    ("Kraków", 22),
+                    ("Wrocław", 12),
+                    ("Poznań", 8),
+                    ("Gdańsk", 6),
+                    ("Katowice", 4),
+                    ("Łódź", 3),
+                    ("Szczecin", 2)
                 ]
             },
             {
-                pytanie: "Co Polacy jedzą na śniadanie?",
-                odpowiedzi: [
-                    { text: "Kanapki", punkty: 40, revealed: false },
-                    { text: "Jajecznica", punkty: 18, revealed: false },
-                    { text: "Płatki", punkty: 12, revealed: false },
-                    { text: "Owsianka", punkty: 8, revealed: false },
-                    { text: "Parówki", punkty: 6, revealed: false }
+                "pytanie": "Co Polacy jedzą na śniadanie?",
+                "odpowiedzi": [
+                    ("Kanapki", 40),
+                    ("Jajecznica", 18),
+                    ("Płatki", 12),
+                    ("Owsianka", 8),
+                    ("Parówki", 6),
+                    ("Omlet", 5),
+                    ("Twaróg", 4),
+                    ("Ser biały", 3)
                 ]
             },
             {
-                pytanie: "Nazwij kolory tęczy",
-                odpowiedzi: [
-                    { text: "Czerwony", punkty: 28, revealed: false },
-                    { text: "Pomarańczowy", punkty: 20, revealed: false },
-                    { text: "Żółty", punkty: 18, revealed: false },
-                    { text: "Zielony", punkty: 15, revealed: false },
-                    { text: "Niebieski", punkty: 12, revealed: false }
+                "pytanie": "Nazwij kolory tęczy",
+                "odpowiedzi": [
+                    ("Czerwony", 28),
+                    ("Pomarańczowy", 20),
+                    ("Żółty", 18),
+                    ("Zielony", 15),
+                    ("Niebieski", 12),
+                    ("Granatowy", 6),
+                    ("Fioletowy", 4)
+                ]
+            },
+            {
+                "pytanie": "Co zabieramy na plażę?",
+                "odpowiedzi": [
+                    ("Ręcznik", 35),
+                    ("Krem z filtrem", 20),
+                    ("Leżak", 15),
+                    ("Parawan", 12),
+                    ("Zabawki", 8),
+                    ("Picie", 5),
+                    ("Książka", 3)
+                ]
+            },
+            {
+                "pytanie": "Nazwij najpopularniejsze dyscypliny sportowe",
+                "odpowiedzi": [
+                    ("Piłka nożna", 45),
+                    ("Siatkówka", 18),
+                    ("Koszykówka", 12),
+                    ("Tenis", 8),
+                    ("Bieganie", 6),
+                    ("Pływanie", 5),
+                    ("Rower", 3)
                 ]
             }
-        ];
+        ]
+        self.gracze = {}
+        self.punkty_zespolu1 = 0
+        self.punkty_zespolu2 = 0
+        self.aktywna_runda = None
+        self.wybrane_odpowiedzi = []
+        
+    def dodaj_gracza(self, imie):
+        if imie not in self.gracze:
+            self.gracze[imie] = 0
+        print(f"Gracz {imie} dodany!")
+    
+    def buzzer(self, gracz):
+        if gracz not in self.gracze:
+            print("Nieznany gracz!")
+            return False
+        
+        print(f"\n🔔 BUZZER! {gracz} nacisnął buzzer!")
+        time.sleep(1)
+        return True
+    
+    def wyswietl_pytanie(self):
+        pytanie = self.aktywna_runda
+        print(f"\n🏆 PYTANIE: {pytanie['pytanie']}")
+        print("Odpowiedzi (punkty):")
+        for i, (odp, pkt) in enumerate(pytanie['odpowiedzi'][:3], 1):
+            print(f"  {i}. {odp} ({pkt} pkt)")
+        print("...")
+    
+    def rozpocznij_runde(self):
+        self.aktywna_runda = random.choice(self.pytania)
+        self.wybrane_odpowiedzi = []
+        print("\n🔥 NOWA RUNDA!")
+        self.wyswietl_pytanie()
+    
+    def zgadnij_odpowiedz(self, odpowiedz, gracz):
+        pytanie = self.aktywna_runda
+        for odp, punkty in pytanie['odpowiedzi']:
+            if odpowiedz.lower() in odp.lower() or odp.lower() in odpowiedz.lower():
+                if odp not in [o[0] for o in self.wybrane_odpowiedzi]:
+                    self.wybrane_odpowiedzi.append((odp, punkty))
+                    self.gracze[gracz] += punkty
+                    print(f"✅ POPRAWNA! '{odp}' = {punkty} pkt")
+                    print(f"Gracz {gracz}: {self.gracze[gracz]} pkt")
+                    
+                    if sum(pkt for _, pkt in self.wybrane_odpowiedzi) >= 50:
+                        print("🎉 ZDOBYTE PYTANIE!")
+                        return True
+                    return True
+        print("❌ Źle! Brak takiej odpowiedzi.")
+        return False
+    
+    def wyswietl_stan_rundy(self):
+        print("\n📊 STAN RUNDY:")
+        for odp, pkt in self.wybrane_odpowiedzi:
+            print(f"  • {odp}: {pkt} pkt")
+        print(f"  RAZEM: {sum(pkt for _, pkt in self.wybrane_odpowiedzi)} pkt")
+    
+    def wyswietl_ranking(self):
+        print("\n🏅 RANKING GRACZY:")
+        sorted_gracze = sorted(self.gracze.items(), key=lambda x: x[1], reverse=True)
+        for i, (imie, pkt) in enumerate(sorted_gracze, 1):
+            print(f"{i}. {imie}: {pkt} pkt")
+    
+    def graj(self):
+        print("🎮 Witaj w FAMILIADZIE! 🎮")
+        print("Polecenia: 'dodaj [imię]', 'runda', 'buzzer [imię]', 'odp [odpowiedź]', 'ranking'")
+        
+        while True:
+            try:
+                wejscie = input("\n➤ ").strip().lower()
+                
+                if wejscie.startswith("dodaj "):
+                    imie = wejscie[6:].strip().title()
+                    self.dodaj_gracza(imie)
+                
+                elif wejscie == "runda":
+                    self.rozpocznij_runde()
+                
+                elif wejscie.startswith("buzzer "):
+                    gracz = wejscie[7:].strip().title()
+                    self.buzzer(gracz)
+                
+                elif wejscie.startswith("odp "):
+                    if not self.aktywna_runda:
+                        print("Najpierw rozpocznij rundę!")
+                        continue
+                    odpowiedz = wejscie[4:].strip().title()
+                    gracz = input("Kto zgaduje? ").strip().title()
+                    self.zgadnij_odpowiedz(odpowiedz, gracz)
+                    self.wyswietl_stan_rundy()
+                
+                elif wejscie == "ranking":
+                    self.wyswietl_ranking()
+                
+                elif wejscie in ["koniec", "quit", "exit"]:
+                    print("Dziękujemy za grę! 🏆")
+                    self.wyswietl_ranking()
+                    break
+                
+                else:
+                    print("Nieznane polecenie! Użyj: dodaj, runda, buzzer, odp, ranking")
+                    
+            except KeyboardInterrupt:
+                print("\n\nDo widzenia! 🏆")
+                self.wyswietl_ranking()
+                break
 
-        let gracze = {};
-        let aktualnePytanie = null;
-        let roundScore = 0;
-        let activePlayer = null;
-        let strikes = 0;
-
-        function addPlayer() {
-            const name = document.getElementById('playerName').value.trim();
-            if (name && !gracze[name]) {
-                gracze[name] = 0;
-                document.getElementById('playerName').value = '';
-                updatePlayersList();
-                updateRanking();
-            }
-        }
-
-        function updatePlayersList() {
-            const list = document.getElementById('playersList');
-            list.innerHTML = '';
-            Object.entries(gracze).forEach(([name, score]) => {
-                const div = document.createElement('div');
-                div.className = 'player';
-                div.innerHTML = `${name} <span>${score} pkt</span>`;
-                list.appendChild(div);
-            });
-        }
-
-        function newRound() {
-            aktualnePytanie = JSON.parse(JSON.stringify(randomChoice(pytania)));
-            roundScore = 0;
-            strikes = 0;
-            activePlayer = null;
-            
-            document.getElementById('questionArea').innerHTML = `
-                <div class="question">${aktualnePytanie.pytanie}</div>
-                <div style="font-size:1.5em; margin:20px 0;">Do zdobycia: ${aktualnePytanie.odpowiedzi.reduce((sum, o) => sum + o.punkty, 0)} pkt</div>
-            `;
-            
-            renderAnswers();
-            updateRoundScore();
-        }
-
-        function renderAnswers() {
-            const container = document.getElementById('answersContainer');
-            container.innerHTML = '';
-            
-            aktualnePytanie.odpowiedzi.slice(0, 6).forEach((odp, index) => {
-                const div = document.createElement('div');
-                div.className = `answer available`;
-                div.innerHTML = `
-                    ${String(index + 1).padStart(2, '0')} • ${odp.punkty} pkt
-                    <div style="font-size:0.8em; opacity:0.7;">${odp.text}</div>
-                `;
-                div.onclick = () => revealAnswer(odp);
-                container.appendChild(div);
-            });
-        }
-
-        function revealAnswer(answer) {
-            if (answer.revealed || !activePlayer) return;
-            
-            answer.revealed = true;
-            roundScore += answer.punkty;
-            
-            if (activePlayer && gracze[activePlayer]) {
-                gracze[activePlayer] += answer.punkty;
-            }
-            
-            renderAnswers();
-            updateRoundScore();
-            updateRanking();
-            updatePlayersList();
-            
-            if (roundScore >= 50) {
-                setTimeout(() => alert('🎉 ZDOBYTE PYTANIE!'), 500);
-            }
-        }
-
-        function buzzPlayer(team) {
-            if (activePlayer) return; // buzzer zablokowany
-            
-            activePlayer = team;
-            showBuzzEffect(`${team} BUZZER! 🔔`);
-            document.getElementById('guessInput').focus();
-        }
-
-        function showBuzzEffect(text) {
-            const effect = document.createElement('div');
-            effect.className = 'buzz-effect';
-            effect.textContent = text;
-            document.body.appendChild(effect);
-            
-            setTimeout(() => {
-                document.body.removeChild(effect);
-                activePlayer = null;
-            }, 1000);
-        }
-
-        function submitGuess() {
-            const guess = document.getElementById('guessInput').value.trim().toLowerCase();
-            document.getElementById('guessInput').value = '';
-            
-            if (!guess || !activePlayer) return;
-            
-            // Proste dopasowanie odpowiedzi
-            const found = aktualnePytanie.odpowiedzi.find(o => 
-                o.text.toLowerCase().includes(guess) || guess.includes(o.text.toLowerCase())
-            );
-            
-            if (found && !found.revealed) {
-                revealAnswer(found);
-            } else {
-                strikes++;
-                if (strikes >= 3) {
-                    alert('💥 3 STRAJKI! Zmiana zespołu!');
-                    activePlayer = null;
-                    strikes = 0;
-                }
-            }
-        }
-
-        function strike() {
-            strikes++;
-            if (strikes >= 3) {
-                alert('💥 3 STRAJKI! Zmiana zespołu!');
-                activePlayer = null;
-                strikes = 0;
-            }
-            document.getElementById('guessInput').value = '';
-        }
-
-        function updateRoundScore() {
-            document.getElementById('roundScore').textContent = `${roundScore} pkt`;
-        }
-
-        function updateRanking() {
-            const rankingDiv = document.getElementById('ranking');
-            const sorted = Object.entries(gracze)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10);
-            
-            rankingDiv.innerHTML = sorted.map(([name, score], i) => 
-                `<div style="font-size:1.3em; padding:10px; background:#f8f9fa; margin:5px 0; border-radius:10px;">
-                    ${i+1}. ${name}: <strong style="color:#667eea;">${score} pkt</strong>
-                </div>`
-            ).join('');
-        }
-
-        function resetGame() {
-            gracze = {};
-            aktualnePytanie = null;
-            roundScore = 0;
-            updatePlayersList();
-            updateRanking();
-            document.getElementById('questionArea').innerHTML = 
-                '<button class="btn" onclick="newRound()" style="font-size:1.5em; padding:20px 40px;">🎯 NOWA RUNDA</button>';
-            document.getElementById('answersContainer').innerHTML = '';
-        }
-
-        function randomChoice(array) {
-            return array[Math.floor(Math.random() * array.length)];
-        }
-
-        // Enter w inpucie zgaduje
-        document.getElementById('guessInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitGuess();
-        });
-
-        // Inicjalizacja
-        updatePlayersList();
-        updateRanking();
-    </script>
-</body>
-</html>
-  
+# Uruchom grę
+if __name__ == "__main__":
+    gra = Familiada()
+    gra.graj()
